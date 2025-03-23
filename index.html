@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Area Address Quiz</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "San Francisco", Helvetica, Arial, sans-serif;
+      background: linear-gradient(145deg, #e5ecf3, #ffffff);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      border-radius: 28px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 600px;
+      padding: 40px;
+      text-align: center;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 20px;
+      text-align: left;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 12px;
+      border-radius: 12px;
+      background: #f0f0f5;
+      font-size: 16px;
+    }
+    .option input[type="checkbox"] {
+      margin-right: 10px;
+    }
+    .option.correct {
+      background-color: #b4f1b4 !important;
+    }
+    .option.wrong {
+      background-color: #f1b4b4 !important;
+    }
+    .submit-btn {
+      margin-top: 20px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .submit-btn:hover {
+      background: #45a049;
+    }
+    .submit-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+    .progress, .score {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+    .nav-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .nav-buttons button {
+      padding: 8px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #e0e0e8;
+      cursor: pointer;
+    }
+    .nav-buttons button:hover {
+      background: #ccc;
+    }
+    .feedback {
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="question">Loading...</h1>
+    <div class="options" id="options"></div>
+    <button class="submit-btn" id="submit" onclick="checkAnswers()">Submit</button>
+    <div class="progress" id="progress"></div>
+    <div class="score" id="score"></div>
+    <div class="nav-buttons">
+      <button onclick="prevQuestion()">Previous</button>
+      <button onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    const addressData = [
+      { address: "ANNE DISENSVEG", areas: ["Børstad", "Hamar ved gamle CC"] },
+      { address: "ARVESENSVEG", areas: ["Ved Sykehuset"] },
+      { address: "BASTERUDVEGEN", areas: ["Ottestad"] },
+      { address: "BEKKESVEVEGEN", areas: ["Hamar Vest"] },
+      { address: "BISPEGATA", areas: ["Storhamar"] },
+      { address: "BLÅKLOKKEVEGEN", areas: ["Hjellum"] },
+      { address: "BRONSEVEGEN", areas: ["Ridabu"] },
+      { address: "CASPARISVEI", areas: ["Børstad"] },
+      { address: "DALVIKVEGEN", areas: ["Hamar Vest"] },
+      { address: "DISENVEGEN", areas: ["Disen"] },
+      { address: "EIVIND ENGENSVEI", areas: ["Solvang"] },
+      { address: "ELVESLETTA", areas: ["Ingeberg", "Herremingen"] },
+      { address: "ENERVEGEN", areas: ["Ridabu"] },
+      { address: "FAGERLIVEIEN", areas: ["Ridabu"] },
+      { address: "FASANVEGEN", areas: ["Ingeberg"] },
+      { address: "FREDRIK MONSENSGATE", areas: ["Bondesvea"] },
+      { address: "FRØBERGVEGEN", areas: ["Stavsberg"] },
+      { address: "GARTNERVEGEN", areas: ["Ottestad"] },
+      { address: "GLIMMERVEGEN", areas: ["Ridabu"] },
+      { address: "GRANITTVEGEN", areas: ["Ridabu"] },
+      { address: "GRUBHOLVEGEN", areas: ["Vang"] },
+      { address: "GUBBESTUVEGEN", areas: ["Stavsberg"] },
+      { address: "HAGAVEGEN", areas: ["Ingeberg", "Ottestad"] },
+      { address: "HASSELVEIEN", areas: ["Ridabu", "Ottestad"] },
+      { address: "LEIRVEGEN", areas: ["Ridabu"] },
+      { address: "LILLE PRESTRUDVEI", areas: ["Prestrud"] },
+      { address: "LOTTENVEIEN", areas: ["Solvang"] },
+      { address: "LUNDVEGEN", areas: ["Hamar Vest"] },
+      { address: "LØVSTADVEGEN", areas: ["Ottestad"] },
+      { address: "MAIHAUGEN", areas: ["Ottestad"] },
+      { address: "MATHS PEDERSENSGATE", areas: ["Ajer", "Martinlumsletta"] },
+      { address: "MIDTVANGVEGEN", areas: ["Vang"] },
+      { address: "MORTERUDSGATE", areas: ["Sentrum"] },
+      { address: "NYBROTTSGUTUA", areas: ["Vangli"] },
+      { address: "NØTTELITEN", areas: ["Hamar Vest"] },
+      { address: "NORDVIKEIEN", areas: ["Hamar Vest", "Storhamar"] },
+      { address: "OLE VIGSGATE", areas: ["Bondesvea"] },
+      { address: "OLUF MELDVOLDSGATE", areas: ["Disen"] },
+      { address: "ORREVEGEN", areas: ["Ingeberg"] },
+      { address: "PARALLELLVEIEN", areas: ["Ottestad"] },
+      { address: "PEDER OLSSØNSVEG", areas: ["Ridabu"] },
+      { address: "PETER SINNERUDSVEI", areas: ["Sandvika"] },
+      { address: "POSTVEGEN", areas: ["Ottestad"] },
+      { address: "RIGEL", areas: ["Hamar Vest/Hol"] },
+      { address: "ROALD AMUNDSENSGATE", areas: ["Ajer"] },
+      { address: "ROSEVEIEN", areas: ["Høelum", "Ottestad"] },
+      { address: "SAGBAKKEN", areas: ["Vang"] },
+      { address: "SIGURD JARLSGATE", areas: ["Storhamar"] },
+      { address: "SKJØNNHAUGVEGEN", areas: ["Ottestad"] },
+      { address: "SKOGVEIEN", areas: ["Disen", "Ottestad"] },
+      { address: "SLEMSRUDVEGEN", areas: ["Vang Øvre"] },
+      { address: "SNORRESGATE", areas: ["Storhamar"] },
+      { address: "SOLHELLINGA", areas: ["Hamar Vest"] },
+      { address: "SOLVANGVEIEN", areas: ["Solvang"] },
+      { address: "STAVHELLINGA", areas: ["Solvang"] },
+      { address: "STJERNEVEGEN", areas: ["Ottestad"] },
+      { address: "STRANDA", areas: ["Ridabu"] },
+      { address: "SUNDVEGEN", areas: ["Sandvika"] },
+      { address: "SYMREVEGEN", areas: ["Ridabu", "Hjellum"] },
+      { address: "TEGLEVEGEN", areas: ["Ottestad"] },
+      { address: "TIURVEGEN", areas: ["Ingeberg"] },
+      { address: "TOPPENVEIEN", areas: ["Børstad/Vien"] },
+      { address: "TORFINNSGATE", areas: ["Storhamar"] },
+      { address: "UELANDSGATE", areas: ["Sentrum"] },
+      { address: "TUNBEKKVEGEN", areas: ["Ottestad"] },
+      { address: "VARDEN", areas: ["Ridabu"] },
+      { address: "VEKTEN", areas: ["Hamar Vest", "Hol"] },
+      { address: "VIBORGVEIEN", areas: ["Hamar Vest"] },
+      { address: "VILLAVEGEN", areas: ["Ilseng"] },
+      { address: "WELHAVENSGATE", areas: ["Østbyen"] },
+      { address: "ØVERHAMNINGA", areas: ["Vang"] },
+      { address: "ÅKER ALLE", areas: ["Ridabu"] },
+      { address: "SANDERUD SYKEHUS", areas: ["Peter Skredders veg"] },
+      { address: "LUNDEN SKOLE", areas: ["Vang"] },
+      { address: "VÅRTUN", areas: ["Vang"] },
+      { address: "ÅKERSHAGAN", areas: ["Ottestad"] },
+      { address: "STEINERSKOLEN", areas: ["Sandvika"] },
+      { address: "FURNES UNGDOMSSKOLE", areas: ["Nydal"] }
+    ];
+
+
+    addressData.forEach(item => {
+      item.areas = item.areas.map(area => area.split("/")).flat();
+    });
+
+    const areasMap = {};
+    addressData.forEach(({ address, areas }) => {
+      areas.forEach(area => {
+        if (!areasMap[area]) areasMap[area] = [];
+        areasMap[area].push(address);
+      });
+    });
+
+    const allAreas = Object.keys(areasMap);
+    const questions = allAreas.map(area => ({
+      area,
+      correctAddresses: areasMap[area]
+    }));
+
+    const shuffledIndexes = shuffle([...Array(questions.length).keys()]);
+    const answerLog = Array(questions.length).fill(null);
+    let current = 0;
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function renderQuestion() {
+      const q = questions[shuffledIndexes[current]];
+      const allAddresses = addressData.map(d => d.address);
+      const correctAddresses = q.correctAddresses;
+      const wrongAddresses = shuffle(allAddresses.filter(a => !correctAddresses.includes(a))).slice(0, 5);
+      const options = shuffle([...correctAddresses, ...wrongAddresses]);
+
+      document.getElementById("question").innerText = `"${q.area}"`;
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      document.getElementById("progress").innerText = `Question ${current + 1} of ${questions.length}`;
+      const submitBtn = document.getElementById("submit");
+      submitBtn.disabled = answerLog[current] !== null;
+
+      options.forEach(address => {
+        const div = document.createElement("div");
+        div.className = "option";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.id = address;
+        checkbox.disabled = answerLog[current] !== null;
+        const label = document.createElement("label");
+        label.htmlFor = address;
+        label.innerText = address;
+        div.appendChild(checkbox);
+        div.appendChild(label);
+
+        if (answerLog[current] !== null) {
+          const isCorrect = correctAddresses.includes(address);
+          const wasSelected = answerLog[current].includes(address);
+          if (wasSelected) {
+            div.classList.add(isCorrect ? "correct" : "wrong");
+          }
+        }
+
+        optionsDiv.appendChild(div);
+      });
+
+      if (answerLog[current] !== null) {
+        const feedback = document.createElement("div");
+        feedback.className = "feedback";
+        feedback.style.color = answerLog[current].length === correctAddresses.length && correctAddresses.every(a => answerLog[current].includes(a)) ? "#4CAF50" : "#d9534f";
+        feedback.innerText = `Correct answers: ${correctAddresses.join(", ")}`;
+        optionsDiv.appendChild(feedback);
+      }
+    }
+
+    function checkAnswers() {
+      const q = questions[shuffledIndexes[current]];
+      const correctAddresses = q.correctAddresses;
+      const selected = Array.from(document.querySelectorAll(".option input:checked")).map(input => input.id);
+      answerLog[current] = selected;
+
+      let isFullyCorrect = selected.length === correctAddresses.length && correctAddresses.every(a => selected.includes(a));
+      if (isFullyCorrect) {
+        correctCount++;
+      } else {
+        wrongCount++;
+      }
+
+      document.querySelectorAll(".option").forEach(div => {
+        const checkbox = div.querySelector("input");
+        const address = checkbox.id;
+        const isCorrect = correctAddresses.includes(address);
+        const wasSelected = selected.includes(address);
+        if (wasSelected) {
+          div.classList.add(isCorrect ? "correct" : "wrong");
+        }
+        checkbox.disabled = true;
+      });
+
+      const feedback = document.createElement("div");
+      feedback.className = "feedback";
+      feedback.style.color = isFullyCorrect ? "#4CAF50" : "#d9534f";
+      feedback.innerText = `Correct answers: ${correctAddresses.join(", ")}`;
+      document.getElementById("options").appendChild(feedback);
+
+      document.getElementById("submit").disabled = true;
+      updateScore();
+    }
+
+    function nextQuestion() {
+      if (current < shuffledIndexes.length - 1) {
+        current++;
+        renderQuestion();
+      }
+    }
+
+    function prevQuestion() {
+      if (current > 0) {
+        current--;
+        renderQuestion();
+      }
+    }
+
+    function updateScore() {
+      document.getElementById("score").innerText = `Correct: ${correctCount} | Wrong: ${wrongCount}`;
+    }
+
+    window.onload = () => {
+      renderQuestion();
+      updateScore();
+    };
+  </script>
+</body>
+</html>
